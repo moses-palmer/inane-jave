@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+## Launches the Inane Jave server.
+##
+## Usage: ijave PROJECT_DB
+##   PROJECT_DB The project database. This file must be owned by the user
+##              running this script.
+
+set -e
+
+# Show help if requested
+if [ "$1" = "-h" ]; then
+    sed -e '/^$/,$d' "$0" | awk '/^##/ { print substr($0, 4) }'
+    echo
+    exit 0
+fi
+
+
+##
+# The prefix inside the container.
+PREFIX="/opt/inane-jave"
+
+
+##
+# The directory cotnaining projects.
+IJAVE_PROJECT_SRC="$(dirname "$1")"
+IJAVE_PROJECT_DST="$PREFIX/projects"
+IJAVE_PROJECT_FILE="$IJAVE_PROJECT_DST/$(basename "$1")"
+shift
+
+
+##
+# Ensures that a directory exists on the host.
+#
+# The absolute path is written to STDOUT.
+host_directory() {
+    if [ ! -d "$1" ]; then
+        mkdir -p "$1"
+    fi
+
+    realpath "$1"
+}
+
+
+# Ensure the directories exist
+IJAVE_PROJECT_SRC="$(host_directory "$IJAVE_PROJECT_SRC")"
+
+
+# Finally run the requestd script
+docker run --rm --tty --interactive \
+    --mount "type=bind,src=$IJAVE_PROJECT_SRC,dst=$IJAVE_PROJECT_DST" \
+    @NAMESPACE@/@PROJECT@:@VERSION@ \
+    "$IJAVE_PROJECT_FILE" "$@"
