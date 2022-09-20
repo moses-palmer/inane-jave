@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+
+##
+# Make sure we can import the code.
+export PYTHONPATH="$PREFIX/backend"
+
+
+##
+# Launch the application.
+python -m ijave "$@"
