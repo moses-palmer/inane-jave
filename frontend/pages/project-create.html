@@ -1,0 +1,73 @@
+<section class="app" id="project-create">
+    <h1 data-trans>
+        New project
+    </h1>
+
+    <p data-trans>
+        Create a project to manage your prompts. When you have created a
+        project, you can add prompts to it.
+    </p>
+
+    <section>
+        <form class="managed">
+            <label for="name" data-trans>Project name:</label>
+            <input
+                    data-trans="placeholder"
+                    type="text"
+                    name="name"
+                    autocomplete="off"
+                    placeholder="Inane Jave and the spiders from Mars"
+                    required="required">
+            </input>
+
+
+            <label for="description" data-trans>A short description:</label>
+            <textarea
+                    data-trans="placeholder"
+                    type="text"
+                    name="description"
+                    autocomplete="off"
+                    rows="3"
+                    placeholder="Jave runs into a sticky situation!"
+                    required="required"></textarea>
+
+            <fieldset>
+                <div>
+                    <label for="width" data-trans>Image width:</label>
+                    <input
+                            type="number"
+                            name="width"
+                            placeholder="512"></input>
+                </div>
+                <div>
+                    <label for="height" data-trans>Image height:</label>
+                    <input
+                            type="number"
+                            name="height"
+                            placeholder="512"></input>
+                </div>
+            </fieldset>
+
+            <p data-trans>
+                Please note that image dimensions must be multiples of 128
+                pixels.
+            </p>
+
+            <div class="buttons row">
+                <input
+                        data-trans="value"
+                        class="add"
+                        type="submit"
+                        value="Create">
+                </input>
+                <input
+                        data-trans="value"
+                        class="cancel"
+                        type="button"
+                        value="Cancel"
+                        onclick="history.back()">
+                </input>
+            </div>
+        </form>
+    </section>
+</section>
