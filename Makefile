@@ -32,3 +32,7 @@ test: test.in container backend/VERSION
 		< test.in \
 		> test
 	@sh test
+
+
+test-frontend: container ijave
+	@sh ijave --mount-frontend out/test.db

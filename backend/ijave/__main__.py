@@ -9,6 +9,9 @@ from . import db, routes
 #: The port on which to listen.
 PORT = os.getenv('IJAVE_PORT', '8080')
 
+#: If present, a local direcory from which to serve static files.
+IJAVE_STATIC_DIR = os.getenv('IJAVE_STATIC_DIR')
+
 
 def main(version: str, database: db.Database, port: int):
     import logging
@@ -36,6 +39,14 @@ def main(version: str, database: db.Database, port: int):
     app.on_response_prepare.append(on_prepare)
     app.add_routes(routes.ALL)
     app.db = database
+
+    if IJAVE_STATIC_DIR is not None:
+        async def serve_index(req):
+            return web.FileResponse(
+                os.path.join(IJAVE_STATIC_DIR, 'index.html'))
+
+        app.router.add_get('/', serve_index)
+        app.router.add_static('/', IJAVE_STATIC_DIR)
 
     print('=== Starting web server ===')
     sys.stdout.flush()

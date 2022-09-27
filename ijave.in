@@ -9,6 +9,15 @@
 
 set -e
 
+if [ "$1" = "--mount-frontend" ]; then
+    shift
+    IJAVE_FRONTEND_SRC="$(dirname "$(realpath "$0")")/frontend"
+    IJAVE_FRONTEND_DST="$PREFIX/frontend-override"
+    DOCKER_RUN_EXTRA_ARGS="
+        --env=IJAVE_STATIC_DIR=$IJAVE_FRONTEND_DST \
+        --mount=type=bind,src=$IJAVE_FRONTEND_SRC,dst=$IJAVE_FRONTEND_DST"
+fi
+
 # Show help if requested
 if [ "$1" = "-h" ]; then
     sed -e '/^$/,$d' "$0" | awk '/^##/ { print substr($0, 4) }'
@@ -56,5 +65,6 @@ docker run --rm --tty --interactive \
     --env "IJAVE_PORT=$IJAVE_PORT" \
     --mount "type=bind,src=$IJAVE_PROJECT_SRC,dst=$IJAVE_PROJECT_DST" \
     --publish "$IJAVE_PORT:$IJAVE_PORT" \
+    $DOCKER_RUN_EXTRA_ARGS \
     @NAMESPACE@/@PROJECT@:@VERSION@ \
     "$IJAVE_PROJECT_FILE" "$@"
