@@ -1,0 +1,156 @@
+#!/bin/sh
+
+set -e
+
+
+##
+# The prefix inside the container.
+PREFIX="/opt/inane-jave"
+
+##
+# The external port and URL base.
+PORT=8080
+BASE="http://localhost:$PORT/api"
+IJAVE_FRONTEND_DIR="$(dirname "$(realpath "$0")")/frontend"
+
+
+##
+# Extracts a field from a JSON payload.
+#
+# Each argument is an index into the data passed on STDIN.
+field() {
+    python3 -c '
+import json, sys
+string = sys.stdin.read()
+try:
+    data = json.loads(string)
+except json.JSONDecodeError as e:
+    sys.stderr.write("{}: {}".format(e, string))
+    sys.exit(1)
+for arg in sys.argv[1:]:
+    if isinstance(data, list):
+        data = data[int(arg)]
+    else:
+        data = data[arg]
+print(data)
+    ' "$@"
+}
+
+
+##
+# Performs a request to the backend.
+#
+# The first argument is the path, other arguments are passed to curl
+# unmodified.
+req() {
+    path="$1"
+    shift
+    curl --silent --fail-with-body "$BASE/$path" "$@"
+    echo
+}
+
+##
+# Pretty-prints a JSON payload.
+pretty() {
+    echo "===================================================================="
+    echo "# $@"
+    echo "#-------------------------------------------------------------------"
+    python3 -c '
+import json, sys
+string = sys.stdin.read()
+try:
+    json.dump(json.loads(string), sys.stdout, indent=4)
+except json.JSONDecodeError as e:
+    sys.stderr.write("{}: {}".format(e, string))
+    sys.exit(1)
+print()
+' | sed 's/\(^\)/# \1/g'
+    echo "===================================================================="
+    echo
+}
+
+##
+# Performs a GET using req and then pretty-prints the response.
+get() {
+    req "$@" | pretty "$1"
+}
+
+
+# Remove database and start container
+rm -rf out
+mkdir out
+CONTAINER_ID="$(docker run --detach --rm \
+    --env "IJAVE_PORT=$PORT" \
+    --env "IJAVE_STATIC_DIR=$PREFIX/frontend" \
+    --mount "type=bind,src=$(realpath out),dst=$PREFIX/projects" \
+    --mount "type=bind,src=$IJAVE_FRONTEND_DIR,dst=$PREFIX/frontend" \
+    --publish "$PORT:$PORT" \
+    @NAMESPACE@/@PROJECT@:@VERSION@ \
+    "$PREFIX/projects/test.db" \
+    2>out/log)"
+docker logs --follow "$CONTAINER_ID" >out/log &
+trap "docker kill $CONTAINER_ID" EXIT
+tail -f "out/log" | sed '/^=== Starting web server ===/ q'
+echo "Started container $CONTAINER_ID"
+sleep 2
+
+
+# Create a project
+echo "Creating project"
+PROJECT1="$(req project \
+    --data '{"name":"Project 1","description":"The first project"}' \
+    --header 'Content-Type: application/json' \
+    | field id)"
+echo "Creating prompt for project $PROJECT1"
+PROMPT1="$(req project/$PROJECT1/prompts \
+    --data '{"text":"a quick brown fox"}' \
+    --header 'Content-Type: application/json' \
+    | field id)"
+echo "Creating prompt for project $PROJECT1"
+PROMPT2="$(req project/$PROJECT1/prompts \
+    --data '{"text":"a slow gray fox"}' \
+    --header 'Content-Type: application/json' \
+    | field id)"
+echo "Creating image for prompt $PROMPT1"
+IMAGE1="$(req prompt/$PROMPT1/images \
+    --data-binary "an image in PNG format" \
+    --header 'Content-Type: image/png' \
+    | field id)"
+IMAGE2="$(req prompt/$PROMPT1/images \
+    --data-binary "another image in PNG format" \
+    --header 'Content-Type: image/png' \
+    | field id)"
+IMAGE3="$(req prompt/$PROMPT2/images \
+    --data-binary "yet another image in PNG format" \
+    --header 'Content-Type: image/png' \
+    | field id)"
+PROJECT2="$(req project \
+    --data '{"name":"Project 2","description":"The second project"}' \
+    --header 'Content-Type: application/json' \
+    | field id)"
+
+
+get project
+req project/$PROJECT1 \
+    --request PUT \
+    --data '{"description":"Modified"}' \
+    --header 'Content-Type: application/json' | pretty "Updating project"
+get project
+req project/$PROJECT2 \
+    --request DELETE
+get project
+get project/$PROJECT1
+get project/$PROJECT1/prompts
+req prompt/$PROMPT2 \
+    --request DELETE
+get project/$PROJECT1/prompts
+get prompt/$PROMPT1
+get prompt/$PROMPT1/images
+
+echo "Getting image $IMAGE1"
+req project/$PROJECT1/icon --verbose
+req prompt/$PROMPT1/icon --verbose
+req image/$IMAGE1/png --verbose
+req image/$IMAGE1 \
+    --request DELETE
+curl "$BASE/image/$IMAGE1/png" --verbose

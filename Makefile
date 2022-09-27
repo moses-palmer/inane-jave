@@ -22,3 +22,17 @@ ijave: ijave.in backend/VERSION
 		< ijave.in \
 		> ijave
 	@chmod a+x ijave
+
+
+test: test.in container backend/VERSION
+	@sed \
+		-e s/@NAMESPACE@/$(NAMESPACE)/g \
+		-e s/@PROJECT@/$(PROJECT)/g \
+		-e s/@VERSION@/$(VERSION)/g \
+		< test.in \
+		> test
+	@sh test
+
+
+test-frontend: container ijave
+	@sh ijave --mount-frontend out/test.db
