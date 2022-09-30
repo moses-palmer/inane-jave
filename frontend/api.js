@@ -138,11 +138,21 @@ const module = {
          *     The ID of the parent project.
          * @param text
          *     The text of the prompt.
+         * @param steps
+         *     The number of timesteps for generated images.
+         * @param seed
+         *     A random seed.
+         * @param strength
+         *     The strength of the transformation.
          * @return the newly created entity
          */
-        create: (state, projectID, text) => module.post(
+        create: (state, projectID, text, steps, seed, strength) =>
+        module.post(
             "project/{}/prompts".format(projectID), {
-                text}),
+                text,
+                steps,
+                seed,
+                strength}),
 
         /**
          * Retrieves a single entity.

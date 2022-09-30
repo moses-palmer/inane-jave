@@ -106,12 +106,12 @@ PROJECT1="$(req project \
     | field id)"
 echo "Creating prompt for project $PROJECT1"
 PROMPT1="$(req project/$PROJECT1/prompts \
-    --data '{"text":"a quick brown fox"}' \
+    --data '{"text":"a quick brown fox","steps":20,"seed":1,"strength":7.5}' \
     --header 'Content-Type: application/json' \
     | field id)"
 echo "Creating prompt for project $PROJECT1"
 PROMPT2="$(req project/$PROJECT1/prompts \
-    --data '{"text":"a slow gray fox"}' \
+    --data '{"text":"a slow gray fox","steps":30,"seed":2,"strength":7.5}' \
     --header 'Content-Type: application/json' \
     | field id)"
 echo "Creating image for prompt $PROMPT1"
