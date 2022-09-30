@@ -98,11 +98,14 @@ class Database:
         """
         if isinstance(entity, ent.Project):
             tx.execute('''
-                INSERT INTO Project(id, name, description)
-                VALUES(?, ?, ?)''', (
+                INSERT INTO Project(id, name, description, image_width,
+                    image_height)
+                VALUES(?, ?, ?, ?, ?)''', (
                     entity.id,
                     entity.name,
-                    entity.description))
+                    entity.description,
+                    entity.image_width,
+                    entity.image_height))
         elif isinstance(entity, ent.Prompt):
             tx.execute('''
                 INSERT INTO Prompt(id, project, text)
@@ -143,17 +146,19 @@ class Database:
         if isinstance(id, ent.ProjectID):
             tx.execute(
                     '''
-                    SELECT name, description
+                    SELECT name, description, image_width, image_height
                     FROM Project
                     WHERE id = ?''', (
                         id,))
             r = tx.fetchone()
             if r is not None:
-                (name, description) = r
+                (name, description, image_width, image_height) = r
                 return ent.Project(
                     id=id,
                     name=name,
-                    description=description)
+                    description=description,
+                    image_width=image_width,
+                    image_height=image_height)
         elif isinstance(id, ent.PromptID):
             tx.execute(
                     '''
@@ -216,10 +221,13 @@ class Database:
         if isinstance(entity, ent.Project):
             tx.execute('''
                 UPDATE Project
-                SET name = ?, description = ?
+                SET name = ?, description = ?, image_width = ?,
+                    image_height = ?
                 WHERE id = ?''', (
                     entity.name,
                     entity.description,
+                    entity.image_width,
+                    entity.image_height,
                     entity.id))
         elif isinstance(entity, ent.Prompt):
             tx.execute('''
@@ -377,10 +385,13 @@ class Database:
             ent.Project(
                 id=ent.ProjectID.from_uuid(id),
                 name=name,
-                description=description)
-            for (id, name, description) in self._conn.execute(
+                description=description,
+                image_width=image_width,
+                image_height=image_height)
+            for (id, name, description, image_width, image_height) in
+            self._conn.execute(
                 '''
-                SELECT id, name, description
+                SELECT id, name, description, image_width, image_height
                 FROM Project'''))
 
     def prompts(

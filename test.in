@@ -101,7 +101,7 @@ sleep 2
 # Create a project
 echo "Creating project"
 PROJECT1="$(req project \
-    --data '{"name":"Project 1","description":"The first project"}' \
+    --data '{"name":"Project 1","description":"The first project","image_width":512,"image_height":512}' \
     --header 'Content-Type: application/json' \
     | field id)"
 echo "Creating prompt for project $PROJECT1"
@@ -128,7 +128,7 @@ IMAGE3="$(req prompt/$PROMPT2/images \
     --header 'Content-Type: image/png' \
     | field id)"
 PROJECT2="$(req project \
-    --data '{"name":"Project 2","description":"The second project"}' \
+    --data '{"name":"Project 2","description":"The second project","image_width":256,"image_height":256}' \
     --header 'Content-Type: application/json' \
     | field id)"
 
