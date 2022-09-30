@@ -118,6 +118,16 @@ class Database:
                     entity.timestamp,
                     entity.content_type,
                     entity.data))
+        elif isinstance(entity, ent.ImageExecutorCache):
+            tx.execute('''
+                INSERT INTO ImageExecutorCache(id, step, steps, strength,
+                    latent)
+                VALUES(?, ?, ?, ?, ?)''', (
+                    entity.id,
+                    entity.step,
+                    entity.steps,
+                    entity.strength,
+                    entity.latent))
         else:
             raise ValueError(entity)
 
@@ -173,6 +183,22 @@ class Database:
                     timestamp=timestamp,
                     content_type=content_type,
                     data=data)
+        elif isinstance(id, ent.ImageExecutorCacheID):
+            tx.execute(
+                    '''
+                    SELECT step, steps, strength, latent
+                    FROM ImageExecutorCache
+                    WHERE id = ?''', (
+                        id,))
+            r = tx.fetchone()
+            if r is not None:
+                (step, steps, strength, latent) = r
+                return ent.ImageExecutorCache(
+                    id=id,
+                    step=step,
+                    steps=steps,
+                    strength=strength,
+                    latent=latent)
         else:
             raise ValueError(id)
 
@@ -212,6 +238,16 @@ class Database:
                     entity.content_type,
                     entity.data,
                     entity.id))
+        elif isinstance(entity, ent.ImageExecutorCache):
+            tx.execute('''
+                UPDATE ImageExecutorCache
+                SET step = ?, steps = ?, strength = ?, latent = ?
+                WHERE id = ?''', (
+                    entity.step,
+                    entity.steps,
+                    entity.strength,
+                    entity.latent,
+                    entity.id))
         else:
             raise ValueError(entity)
 
@@ -241,6 +277,11 @@ class Database:
         elif isinstance(id, ent.ImageID):
             tx.execute('''
                 DELETE FROM Image
+                WHERE id = ?''', (
+                    id,))
+        elif isinstance(id, ent.ImageExecutorCacheID):
+            tx.execute('''
+                DELETE FROM ImageExecutorCache
                 WHERE id = ?''', (
                     id,))
         else:
