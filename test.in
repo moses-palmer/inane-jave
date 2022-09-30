@@ -12,6 +12,8 @@ PREFIX="/opt/inane-jave"
 PORT=8080
 BASE="http://localhost:$PORT/api"
 IJAVE_FRONTEND_DIR="$(dirname "$(realpath "$0")")/frontend"
+CACHE_DIRECTORY_SRC="$HOME/.cache/ijave"
+CACHE_DIRECTORY_DST="$PREFIX/.keras"
 
 
 ##
@@ -83,6 +85,7 @@ CONTAINER_ID="$(docker run --detach --rm \
     --env "IJAVE_PORT=$PORT" \
     --env "IJAVE_STATIC_DIR=$PREFIX/frontend" \
     --mount "type=bind,src=$(realpath out),dst=$PREFIX/projects" \
+    --mount "type=bind,src=$CACHE_DIRECTORY_SRC,dst=$CACHE_DIRECTORY_DST" \
     --mount "type=bind,src=$IJAVE_FRONTEND_DIR,dst=$PREFIX/frontend" \
     --publish "$PORT:$PORT" \
     @NAMESPACE@/@PROJECT@:@VERSION@ \
