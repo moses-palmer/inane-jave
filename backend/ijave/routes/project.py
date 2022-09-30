@@ -135,6 +135,13 @@ async def prompt_create(req):
                 project=project.id,
                 text=field(data, 'text', str))
             req.app.db.create(tx, entity)
+            cached = ent.ImageExecutorCache(
+                id=ent.ImageExecutorCacheID.from_prompt_id(entity.id),
+                step=0,
+                steps=field(data, 'steps', int),
+                strength=field(data, 'strength', float),
+                latent=None)
+            req.app.db.create(tx, cached)
             return created(entity)
         else:
             return not_found()
