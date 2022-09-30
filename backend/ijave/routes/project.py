@@ -2,6 +2,7 @@ from aiohttp import web
 
 from . import ALL, created, assert_missing, field, json, not_found
 from .. import ent
+from ..executor import image
 
 
 @ALL.post('/api/project')
@@ -11,7 +12,9 @@ async def create(req):
     entity = ent.Project(
         id=ent.ProjectID.new(),
         name=field(data, 'name', str),
-        description=field(data, 'description', str))
+        description=field(data, 'description', str),
+        image_width=field(data, 'image_width', image.normalize),
+        image_height=field(data, 'image_height', image.normalize))
     with req.app.db.transaction() as tx:
         req.app.db.create(tx, entity)
     return created(entity)

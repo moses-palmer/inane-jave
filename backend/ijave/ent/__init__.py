@@ -157,6 +157,12 @@ class Project(Entity):
     #: A short description of this project.
     description: str
 
+    #: The width of images.
+    image_width: int
+
+    #: The height of images.
+    image_height: int
+
 
 @dataclass(frozen=True, eq=True)
 class PromptID(ID):
