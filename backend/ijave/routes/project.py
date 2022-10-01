@@ -1,8 +1,18 @@
+from asyncio import TimeoutError
+
 from aiohttp import web
 
-from . import ALL, created, assert_missing, field, json, not_found
+from . import (
+    ALL,
+    PING_INTERVAL,
+    created,
+    assert_missing,
+    field,
+    json,
+    not_found)
 from .. import ent
 from ..executor import image
+from ..message import Topic
 
 
 @ALL.post('/api/project')
@@ -154,3 +164,48 @@ async def prompt_create(req):
             return created(entity)
         else:
             return not_found()
+
+
+@ALL.get('/api/project/{id}/notifications')
+async def notifications(req):
+    id = ent.ProjectID.from_string(req.match_info['id'])
+
+    broker = req.app.broker
+
+    async def image_data() -> dict:
+        try:
+            data = await image_data.listener.receive(timeout=PING_INTERVAL)
+            if data is None:
+                raise InterruptedError()
+            kind = 'completed'
+        except (TimeoutError, InterruptedError):
+            data = image_data.executor.task
+            if data is not None:
+                kind = 'running'
+            else:
+                kind = 'idle'
+        return {
+            'kind': kind,
+            'data': data.to_json() if data is not None else None}
+    image_data.executor = req.app.image_executor
+    image_data.listener = await broker.listener(Topic(image.KIND, id))
+
+    with req.app.db.transaction() as tx:
+        project = req.app.db.load(tx, id)
+    if project is not None:
+        ws = web.WebSocketResponse()
+        await ws.prepare(req)
+
+        while True:
+            try:
+                await ws.send_json({
+                    'image': await image_data()})
+            except (ConnectionResetError, RuntimeError):
+                # Connection possibly closed
+                break
+
+        await image_data.listener.stop()
+
+        return ws
+    else:
+        return not_found()
