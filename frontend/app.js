@@ -107,7 +107,25 @@ const load = async () => {
     }
 
     const refresh = async () => {
-        await ui.update(state);
+        const page = await ui.update(state);
+
+        if (state.notificationWS) {
+            state.notificationWS.close();
+            state.notificationWS = undefined;
+        }
+        const notificationURL = page?.notificationURL?.call(null, page);
+        if (notificationURL) {
+            const root = api.base().replace(/^http/, "ws");
+            const ws = new WebSocket(`${root}/${notificationURL}`);
+            ws.onmessage = async (message) => {
+                const data = JSON.parse(message.data);
+                await page.notify?.call(null, page, state, data);
+                ui.applyEvent(data);
+            };
+            ws.onerror = (error) => console.log({error});
+            state.notificationURL = notificationURL;
+            state.notificationWS = ws;
+        }
     };
 
     const state = await loadState().then(loadTranslations).then(loadPages);

@@ -15,6 +15,9 @@ from .. import ent
 #: All routes.
 ALL = web.RouteTableDef()
 
+#: The interval for web socket pings.
+PING_INTERVAL = 5
+
 
 def created(entity: ent.Entity) -> web.Response:
     """Generates a *202 Created* response containing the entity.

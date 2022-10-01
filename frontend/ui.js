@@ -19,6 +19,12 @@ export const PROJECT_CLASS = "project";
 export const PROMPT_CLASS = "prompt";
 
 /**
+ * A class name applied to elements somehow corresponding to the currently
+ * executing prompt.
+ */
+export const RUNNING_CLASS = "running";
+
+/**
  * The selecor used to find the main element.
  */
 const MAIN_SELECTOR = "#main";
@@ -209,6 +215,41 @@ export const message = async (caption, text, buttons) => {
  * @return a valid class name
  */
 export const className = (uuid) => `id${uuid}`;
+
+
+/**
+ * Applies updates received in a websocket event.
+ *
+ * @param event
+ *     The event to apply.
+ */
+export const applyEvent = (event) => {
+    const image = event.image;
+    switch (image?.kind) {
+        case "idle":
+            document.querySelectorAll(`.${PROMPT_CLASS}`)
+                .forEach(el => el.classList.remove(RUNNING_CLASS));
+            break;
+
+        case "running":
+            document.querySelectorAll(`.${PROMPT_CLASS}`)
+                .forEach(el => el.classList.remove(RUNNING_CLASS));
+            document.querySelectorAll(
+                    `.${PROMPT_CLASS}.${className(image.data.prompt.id)}`)
+                .forEach(el => el.classList.add(RUNNING_CLASS));
+            break;
+
+        case "completed":
+            const selector = [
+                `.${PROJECT_CLASS}.${className(image.data.prompt.project)}`,
+                `.${PROMPT_CLASS}.${className(image.data.prompt.id)}`,
+            ].map(stub => `${stub} .icon`).join(", ");
+            document.querySelectorAll(selector)
+                .forEach(el => el.style.backgroundImage =
+                    `url(${api.image.url(image.data.image)})`);
+            break;
+    }
+};
 
 
 /**
