@@ -157,6 +157,12 @@ class Project(Entity):
     #: A short description of this project.
     description: str
 
+    #: The width of images.
+    image_width: int
+
+    #: The height of images.
+    image_height: int
+
 
 @dataclass(frozen=True, eq=True)
 class PromptID(ID):
@@ -218,3 +224,42 @@ class Image(Entity):
             timestamp=self.timestamp,
             content_type=self.content_type,
             data=None)
+
+
+@dataclass(frozen=True, eq=True)
+class ImageExecutorCacheID(ID):
+    """A typed ID.
+    """
+    id: UUID
+
+    @classmethod
+    def from_prompt_id(cls, source: PromptID) -> Any:
+        """Converts a prompt ID to an image executor cache ID.
+        """
+        return cls(source.id)
+
+    @property
+    def prompt(self) -> PromptID:
+        """This ID as a prompt ID.
+        """
+        return PromptID.from_uuid(self.id)
+
+
+@dataclass
+class ImageExecutorCache(Entity):
+    """Cached data for an image executor.
+    """
+    #: The database ID.
+    id: ImageExecutorCacheID
+
+    #: The current image generation step.
+    step: int
+
+    #: The total number of steps for this image generator.
+    steps: int
+
+    #: The strength of the transformation.
+    strength: float
+
+    #: The encoded image data.
+    latent: Optional[bytes] = field(repr=False)

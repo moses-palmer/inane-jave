@@ -2,6 +2,7 @@ from aiohttp import web
 
 from . import ALL, created, assert_missing, field, json, not_found
 from .. import ent
+from ..executor import image
 
 
 @ALL.post('/api/project')
@@ -11,7 +12,9 @@ async def create(req):
     entity = ent.Project(
         id=ent.ProjectID.new(),
         name=field(data, 'name', str),
-        description=field(data, 'description', str))
+        description=field(data, 'description', str),
+        image_width=field(data, 'image_width', image.normalize),
+        image_height=field(data, 'image_height', image.normalize))
     with req.app.db.transaction() as tx:
         req.app.db.create(tx, entity)
     return created(entity)
@@ -127,11 +130,27 @@ async def prompt_create(req):
 
         if project is not None:
             data = await json(req)
+            if isinstance(data.get('seed'), float):
+                seed = int(field(data, 'seed', float))
+            else:
+                seed = None
             entity = ent.Prompt(
                 id=ent.PromptID.new(),
                 project=project.id,
                 text=field(data, 'text', str))
             req.app.db.create(tx, entity)
+            cached = ent.ImageExecutorCache(
+                id=ent.ImageExecutorCacheID.from_prompt_id(entity.id),
+                step=0,
+                steps=field(data, 'steps', int),
+                strength=field(data, 'strength', float),
+                latent=None)
+            req.app.db.create(tx, cached)
+            req.app.image_executor.schedule(image.Task(
+                prompt=entity,
+                width=project.image_width,
+                height=project.image_height,
+                seed=seed))
             return created(entity)
         else:
             return not_found()

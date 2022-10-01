@@ -3,7 +3,8 @@ import sys
 
 from aiohttp import web
 
-from . import db, routes
+from . import db, message, routes
+from .executor.image import executor as image_executor
 
 
 #: The port on which to listen.
@@ -40,6 +41,10 @@ def main(version: str, database: db.Database, port: int):
     app.add_routes(routes.ALL)
     app.db = database
 
+    app.broker = message.Broker()
+    app.image_executor = image_executor(app.db, app.broker)
+    app.image_executor.start()
+
     if IJAVE_STATIC_DIR is not None:
         async def serve_index(req):
             return web.FileResponse(
@@ -51,6 +56,8 @@ def main(version: str, database: db.Database, port: int):
     print('=== Starting web server ===')
     sys.stdout.flush()
     web.run_app(app, port=port)
+
+    app.image_executor.stop()
 
 
 if __name__ == '__main__':

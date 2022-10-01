@@ -40,12 +40,19 @@ const module = {
          *     The project name.
          * @param description
          *     A description of the project.
+         * @param image_width
+         *     The width of images generated.
+         * @param image_height
+         *     The height of images generated.
          * @return the newly created entity
          */
-        create: (state, name, description) => module.post(
+        create: (state, name, description, image_width, image_height) =>
+                module.post(
             "project", {
                 name,
-                description}),
+                description,
+                image_width,
+                image_height}),
 
         /**
          * Retrieves a single entity.
@@ -131,11 +138,21 @@ const module = {
          *     The ID of the parent project.
          * @param text
          *     The text of the prompt.
+         * @param steps
+         *     The number of timesteps for generated images.
+         * @param seed
+         *     A random seed.
+         * @param strength
+         *     The strength of the transformation.
          * @return the newly created entity
          */
-        create: (state, projectID, text) => module.post(
+        create: (state, projectID, text, steps, seed, strength) =>
+        module.post(
             "project/{}/prompts".format(projectID), {
-                text}),
+                text,
+                steps,
+                seed,
+                strength}),
 
         /**
          * Retrieves a single entity.
@@ -171,6 +188,17 @@ const module = {
          */
         images: (state, id) => module.get(
             "prompt/{}/images".format(id)),
+
+        /**
+         * Starts generation of a new image for a prompt.
+         *
+         * @param state
+         *     The application state.
+         * @param id
+         *     The prompt ID.
+         */
+        generate: (state, id) => module.post(
+            "prompt/{}/generate-next".format(id)),
 
         /**
          * The URL of a prompt icon.

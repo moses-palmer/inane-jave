@@ -98,11 +98,14 @@ class Database:
         """
         if isinstance(entity, ent.Project):
             tx.execute('''
-                INSERT INTO Project(id, name, description)
-                VALUES(?, ?, ?)''', (
+                INSERT INTO Project(id, name, description, image_width,
+                    image_height)
+                VALUES(?, ?, ?, ?, ?)''', (
                     entity.id,
                     entity.name,
-                    entity.description))
+                    entity.description,
+                    entity.image_width,
+                    entity.image_height))
         elif isinstance(entity, ent.Prompt):
             tx.execute('''
                 INSERT INTO Prompt(id, project, text)
@@ -118,6 +121,16 @@ class Database:
                     entity.timestamp,
                     entity.content_type,
                     entity.data))
+        elif isinstance(entity, ent.ImageExecutorCache):
+            tx.execute('''
+                INSERT INTO ImageExecutorCache(id, step, steps, strength,
+                    latent)
+                VALUES(?, ?, ?, ?, ?)''', (
+                    entity.id,
+                    entity.step,
+                    entity.steps,
+                    entity.strength,
+                    entity.latent))
         else:
             raise ValueError(entity)
 
@@ -133,17 +146,19 @@ class Database:
         if isinstance(id, ent.ProjectID):
             tx.execute(
                     '''
-                    SELECT name, description
+                    SELECT name, description, image_width, image_height
                     FROM Project
                     WHERE id = ?''', (
                         id,))
             r = tx.fetchone()
             if r is not None:
-                (name, description) = r
+                (name, description, image_width, image_height) = r
                 return ent.Project(
                     id=id,
                     name=name,
-                    description=description)
+                    description=description,
+                    image_width=image_width,
+                    image_height=image_height)
         elif isinstance(id, ent.PromptID):
             tx.execute(
                     '''
@@ -173,6 +188,22 @@ class Database:
                     timestamp=timestamp,
                     content_type=content_type,
                     data=data)
+        elif isinstance(id, ent.ImageExecutorCacheID):
+            tx.execute(
+                    '''
+                    SELECT step, steps, strength, latent
+                    FROM ImageExecutorCache
+                    WHERE id = ?''', (
+                        id,))
+            r = tx.fetchone()
+            if r is not None:
+                (step, steps, strength, latent) = r
+                return ent.ImageExecutorCache(
+                    id=id,
+                    step=step,
+                    steps=steps,
+                    strength=strength,
+                    latent=latent)
         else:
             raise ValueError(id)
 
@@ -190,10 +221,13 @@ class Database:
         if isinstance(entity, ent.Project):
             tx.execute('''
                 UPDATE Project
-                SET name = ?, description = ?
+                SET name = ?, description = ?, image_width = ?,
+                    image_height = ?
                 WHERE id = ?''', (
                     entity.name,
                     entity.description,
+                    entity.image_width,
+                    entity.image_height,
                     entity.id))
         elif isinstance(entity, ent.Prompt):
             tx.execute('''
@@ -211,6 +245,16 @@ class Database:
                     entity.timestamp,
                     entity.content_type,
                     entity.data,
+                    entity.id))
+        elif isinstance(entity, ent.ImageExecutorCache):
+            tx.execute('''
+                UPDATE ImageExecutorCache
+                SET step = ?, steps = ?, strength = ?, latent = ?
+                WHERE id = ?''', (
+                    entity.step,
+                    entity.steps,
+                    entity.strength,
+                    entity.latent,
                     entity.id))
         else:
             raise ValueError(entity)
@@ -241,6 +285,11 @@ class Database:
         elif isinstance(id, ent.ImageID):
             tx.execute('''
                 DELETE FROM Image
+                WHERE id = ?''', (
+                    id,))
+        elif isinstance(id, ent.ImageExecutorCacheID):
+            tx.execute('''
+                DELETE FROM ImageExecutorCache
                 WHERE id = ?''', (
                     id,))
         else:
@@ -336,10 +385,13 @@ class Database:
             ent.Project(
                 id=ent.ProjectID.from_uuid(id),
                 name=name,
-                description=description)
-            for (id, name, description) in self._conn.execute(
+                description=description,
+                image_width=image_width,
+                image_height=image_height)
+            for (id, name, description, image_width, image_height) in
+            self._conn.execute(
                 '''
-                SELECT id, name, description
+                SELECT id, name, description, image_width, image_height
                 FROM Project'''))
 
     def prompts(
