@@ -32,6 +32,12 @@ PREFIX="/opt/inane-jave"
 
 
 ##
+# The cached model.
+CACHE_DIRECTORY_SRC="$HOME/.cache/ijave"
+CACHE_DIRECTORY_DST="$PREFIX/.keras"
+
+
+##
 # The directory cotnaining projects.
 IJAVE_PROJECT_SRC="$(dirname "$1")"
 IJAVE_PROJECT_DST="$PREFIX/projects"
@@ -57,12 +63,14 @@ host_directory() {
 
 
 # Ensure the directories exist
+CACHE_DIRECTORY_SRC="$(host_directory "$CACHE_DIRECTORY_SRC")"
 IJAVE_PROJECT_SRC="$(host_directory "$IJAVE_PROJECT_SRC")"
 
 
 # Finally run the requestd script
 docker run --rm --tty --interactive \
     --env "IJAVE_PORT=$IJAVE_PORT" \
+    --mount "type=bind,src=$CACHE_DIRECTORY_SRC,dst=$CACHE_DIRECTORY_DST" \
     --mount "type=bind,src=$IJAVE_PROJECT_SRC,dst=$IJAVE_PROJECT_DST" \
     --publish "$IJAVE_PORT:$IJAVE_PORT" \
     $DOCKER_RUN_EXTRA_ARGS \
