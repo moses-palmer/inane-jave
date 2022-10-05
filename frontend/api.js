@@ -190,6 +190,17 @@ const module = {
             "prompt/{}/images".format(id)),
 
         /**
+         * Starts generation of a new image for a prompt.
+         *
+         * @param state
+         *     The application state.
+         * @param id
+         *     The prompt ID.
+         */
+        generate: (state, id) => module.post(
+            "prompt/{}/generate-next".format(id)),
+
+        /**
          * The URL of a prompt icon.
          *
          * @param state
