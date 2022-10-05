@@ -130,6 +130,10 @@ async def prompt_create(req):
 
         if project is not None:
             data = await json(req)
+            if isinstance(data.get('seed'), float):
+                seed = int(field(data, 'seed', float))
+            else:
+                seed = None
             entity = ent.Prompt(
                 id=ent.PromptID.new(),
                 project=project.id,
@@ -142,6 +146,11 @@ async def prompt_create(req):
                 strength=field(data, 'strength', float),
                 latent=None)
             req.app.db.create(tx, cached)
+            req.app.image_executor.schedule(image.Task(
+                prompt=entity,
+                width=project.image_width,
+                height=project.image_height,
+                seed=seed))
             return created(entity)
         else:
             return not_found()
