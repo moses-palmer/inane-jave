@@ -18,6 +18,7 @@ export default {
             button.firstElementChild.classList.add(
                 ui.PROJECT_CLASS,
                 ui.className(project.id));
+            link.href = `#project/${project.id}`;
             icon.style.backgroundImage =
                 `url(${api.project.iconURL(project.id)})`;
             name.innerText = project.name;
