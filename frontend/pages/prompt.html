@@ -1,0 +1,19 @@
+<section class="app" id="prompt">
+    <section class="prompt image id${context.prompt.id}">
+        <div class="image icon progress container managed">
+            <div class="progress frame">
+                <div class="progress meter managed"></div>
+            </div>
+        </div>
+    </section>
+
+    <hr/>
+
+    <p>
+        ${context.prompt.text}<br/>
+    </p>
+    <a
+        data-trans
+        href="api/prompt/${context.prompt.id}/icon"
+        download="${context.project.name}.png">Download</a>
+</section>
