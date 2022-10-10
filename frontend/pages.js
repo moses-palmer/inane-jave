@@ -1,6 +1,8 @@
 import overview from "./pages/overview.js";
 import project from "./pages/project.js";
 import project_create from "./pages/project-create.js";
+import prompt from "./pages/prompt.js";
+import prompt_create from "./pages/prompt-create.js";
 
 /**
  * The pages of the application.
@@ -11,6 +13,8 @@ const module = {
     "overview": overview,
     "project": project,
     "project:create": project_create,
+    "prompt": prompt,
+    "prompt:create": prompt_create,
 
     /**
      * Attempts to calculate the next view given an application state.
