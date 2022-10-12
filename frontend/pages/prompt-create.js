@@ -4,12 +4,17 @@ import * as ui from "../ui.js";
 
 
 export default {
-    initialize: async (state, projectID) => ({
+    initialize: async (state, projectID, template) => ({
         projectID,
+        template: template && state.prompt(template),
     }),
 
     show: async (page, state) => {
         const [form] = ui.managed(page.doc);
+        if (page.context.template) {
+            form.querySelector("[name = text]").value =
+                page.context.template.text;
+        }
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             const data = new FormData(form);

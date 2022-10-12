@@ -1,6 +1,16 @@
 <section class="app" id="prompt">
     <section class="prompt image id${context.prompt.id}">
         <div class="image icon progress container managed">
+            <div class="buttons row">
+                <a
+                    class="managed"
+                    href="api/prompt/${context.prompt.id}/icon"
+                    download="${context.project.name}.png"></a>
+                <a
+                    class="managed"
+                    href="#prompt:create/${context.project.id}/${context.prompt.id}"></a>
+                <a class="managed"></a>
+            </div>
             <div class="progress frame">
                 <div class="progress meter managed"></div>
             </div>
@@ -12,8 +22,4 @@
     <p>
         ${context.prompt.text}<br/>
     </p>
-    <a
-        data-trans
-        href="api/prompt/${context.prompt.id}/icon"
-        download="${context.project.name}.png">Download</a>
 </section>
