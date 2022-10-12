@@ -13,7 +13,7 @@ export default {
     },
 
     show: async (page, state) => {
-        const [target, add] = ui.managed(page.doc);
+        const [target, add, remover, remove] = ui.managed(page.doc);
         const buttonTemplate = document.getElementById("button-large");
         const iconTemplate = document.getElementById("button-icons");
         page.context.prompts.forEach((prompt) => {
@@ -32,6 +32,21 @@ export default {
         });
         add.appendChild(
             iconTemplate.content.querySelector("#add").cloneNode(true));
+        remove.appendChild(
+            iconTemplate.content.querySelector("#remove").cloneNode(true));
+        remover.onclick = async() => {
+            const response = await ui.message(
+                _("Delete project"),
+                _("Do you want to delete this project and all prompts?"),
+                [
+                    {name: "no", text: _("No"), classes: ["cancel"]},
+                    {name: "yes", text: _("Yes"), classes: ["ok"]},
+                ]);
+            if (response === "yes") {
+                await api.project.remove(state, page.context.project.id);
+                location.href = `#overview`;
+            }
+        };
     },
 
     notificationURL: (page) =>
