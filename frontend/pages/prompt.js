@@ -11,7 +11,8 @@ export default {
     },
 
     show: async (page, state) => {
-        const [image, progress] = ui.managed(page.doc);
+        const [image, download, progress] = ui.managed(page.doc);
+        const iconTemplate = document.getElementById("button-icons");
 
         const width = page.context.project.image_width;
         const height = page.context.project.image_height;
@@ -19,13 +20,15 @@ export default {
             `url(${api.prompt.iconURL(page.context.prompt.id)})`;
         image.style.height = "auto";
         image.style.aspectRatio = `${width} / ${height}`;
+        download.appendChild(
+            iconTemplate.content.querySelector("#download").cloneNode(true));
     },
 
     notificationURL: (page) =>
         `project/${page.context.project.id}/notifications`,
 
     notify: async (page, state, event) => {
-        const [image, progress] = ui.managed(page.doc);
+        const [image, download, progress] = ui.managed(page.doc);
         const prompt = page.context.prompt;
         switch (event.image?.kind) {
             case "idle":
