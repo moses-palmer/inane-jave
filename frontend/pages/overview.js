@@ -9,8 +9,9 @@ export default {
     },
 
     show: async (page, state) => {
-        const [target] = ui.managed(page.doc);
+        const [target, add] = ui.managed(page.doc);
         const buttonTemplate = document.getElementById("button-large");
+        const iconTemplate = document.getElementById("button-icons");
         page.context.forEach((project) => {
             const button = buttonTemplate.content.cloneNode(true);
             const [link, icon, name, description] = ui.managed(button);
@@ -26,5 +27,7 @@ export default {
 
             target.appendChild(button);
         });
+        add.appendChild(
+            iconTemplate.content.querySelector("#add").cloneNode(true));
     },
 };

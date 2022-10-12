@@ -127,6 +127,28 @@ svg .fg {
     fill: var(--color-fg);
     stroke: none;
 }
+svg .frame {
+    fill: var(--color-bg);
+    fill-opacity: 0.5;
+    stroke: var(--color-fg);
+    stroke-width: 4;
+    transition: fill-opacity var(--animation-tick);
+}
+svg .frame.add {
+    fill: #40F040;
+}
+svg .frame.download {
+    fill: #4040F0;
+}
+svg .frame.duplicate {
+    fill: #F0F040;
+}
+svg .frame.remove {
+    fill: #F04040;
+}
+svg:hover .frame {
+    fill-opacity: 1.0;
+}
 svg .icon {
     fill: var(--color-logo);
     stroke: none;
