@@ -37,6 +37,26 @@ def not_found() -> web.Response:
     return web.Response(status=404)
 
 
+def redirect(path: str) -> web.Response:
+    """Generates a redirect.
+
+    :param path: The path to which to redirect.
+
+    :return: a response
+    """
+    return web.HTTPFound(path)
+
+
+def image_redirect(image: ent.ImageID) -> web.Response:
+    """Generates a redirect to an image.
+
+    :param image: The image to which to redirect.
+
+    :return: a response
+    """
+    return redirect('/api/image/{}/png'.format(str(image)))
+
+
 def field(data: dict, name: str, type: type) -> web.Response:
     """Reads the value of a field.
 

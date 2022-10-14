@@ -8,6 +8,7 @@ from . import (
     created,
     assert_missing,
     field,
+    image_redirect,
     json,
     not_found)
 from .. import ent
@@ -92,11 +93,10 @@ async def icon(req):
         raise web.HTTPBadRequest(body=str(e))
 
     with req.app.db.transaction() as tx:
-        entity = req.app.db.icon(tx, id)
-        if entity is not None and entity.data_is_loaded:
-            return web.Response(
-                body=entity.data,
-                content_type=entity.content_type)
+        icon_id = req.app.db.icon(tx, id)
+        if icon_id is not None:
+            print('PROJECT', icon_id)
+            return image_redirect(icon_id)
         else:
             return not_found()
 
