@@ -320,20 +320,21 @@ class Database:
         else:
             raise ValueError((parent, child))
 
-    def icon(self, tx: sqlite3.Cursor, id: ent.ID) -> Optional[ent.Image]:
-        """Loads the icon associated with an entity.
+    def icon(self, tx: sqlite3.Cursor, id: ent.ID) -> Optional[ent.ImageID]:
+        """Loads the icon ID associated with an entity.
 
         :param tx: An ongoing transaction.
 
         :param id: The ID of the entity whose icon to load.
+
+        :return: The image ID of the icon.
 
         :raise ValueError: if the entity ID type is not supported
         """
         if isinstance(id, ent.ProjectID):
             tx.execute(
                 '''
-                SELECT Image.id, Image.content_type, Image.timestamp,
-                    Image.data
+                SELECT Image.id
                 FROM Image
                 LEFT JOIN Prompt
                     ON Prompt.project = ?
@@ -346,8 +347,7 @@ class Database:
         elif isinstance(id, ent.PromptID):
             tx.execute(
                 '''
-                SELECT Image.id, Image.content_type, Image.timestamp,
-                    Image.data
+                SELECT Image.id
                 FROM Image
                 LEFT JOIN Prompt_Image
                     ON Prompt_Image.image = Image.id
@@ -358,8 +358,7 @@ class Database:
         elif isinstance(id, ent.ImageID):
             tx.execute(
                 '''
-                SELECT Image.id, Image.content_type, Image.timestamp,
-                    Image.data
+                SELECT Image.id
                 FROM Image
                 WHERE id = ?''', (
                     id,))
@@ -368,12 +367,8 @@ class Database:
             raise ValueError(id)
 
         if r is not None:
-            (id, content_type, timestamp, data) = r
-            return ent.Image(
-                id=id,
-                timestamp=timestamp,
-                content_type=content_type,
-                data=data)
+            (id,) = r
+            return ent.ImageID.from_uuid(id)
 
     def projects(
             self) -> Sequence[ent.Project]:
