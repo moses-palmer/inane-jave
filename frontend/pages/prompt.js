@@ -15,8 +15,8 @@ export default {
             ui.managed(page.doc);
         const iconTemplate = document.getElementById("button-icons");
 
-        const width = page.context.project.image_width;
-        const height = page.context.project.image_height;
+        const width = page.context.project.imageWidth;
+        const height = page.context.project.imageHeight;
         image.style.backgroundImage =
             `url(${api.prompt.iconURL(page.context.prompt.id)})`;
         image.style.height = "auto";
