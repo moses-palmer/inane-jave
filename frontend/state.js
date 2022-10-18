@@ -85,6 +85,22 @@ class State {
             return entity(this, "prompt", id, PROMPT, PROMPT_INV);
         }
     }
+
+    /**
+     * Updates the application state given a websocket event.
+     *
+     * @param event
+     *     The received event.
+     */
+    applyEvent(event) {
+        switch (event.image?.kind) {
+            case "completed":
+                this.prompt(event.image.data.prompt.id)
+                    .withProgress(event.image.data.progress)
+                    .store();
+                break;
+        }
+    }
 }
 
 
