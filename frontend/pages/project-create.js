@@ -36,9 +36,12 @@ export default {
 
             // Create the project
             const project = await api.project.create(
-                state, data.get("name"), data.get("description"),
-                parseInt(data.get("width").value || 512),
-                parseInt(data.get("height") || 512));
+                state,
+                state.project().empty()
+                    .withName(data.get("name"))
+                    .withDescription(data.get("description"))
+                    .withImageWidth(parseInt(data.get("width")) || 512)
+                    .withImageHeight(parseInt(data.get("height")) || 512));
             location.href = `#project/${project.id}`;
         });
     },
