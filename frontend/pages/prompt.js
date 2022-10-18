@@ -15,8 +15,8 @@ export default {
             ui.managed(page.doc);
         const iconTemplate = document.getElementById("button-icons");
 
-        const width = page.context.project.image_width;
-        const height = page.context.project.image_height;
+        const width = page.context.project.imageWidth;
+        const height = page.context.project.imageHeight;
         image.style.backgroundImage =
             `url(${api.prompt.iconURL(page.context.prompt.id)})`;
         image.style.height = "auto";
@@ -40,6 +40,7 @@ export default {
                 location.href = `#project/${page.context.project.id}`;
             }
         };
+        updateProgress(progress, page.context.prompt);
     },
 
     notificationURL: (page) =>
@@ -48,22 +49,36 @@ export default {
     notify: async (page, state, event) => {
         const [image, download, duplicate, remove, progress] =
             ui.managed(page.doc);
-        const prompt = page.context.prompt;
+        const prompt = state.prompt(page.context.prompt.id);
         switch (event.image?.kind) {
             case "idle":
-                await api.prompt.generate(state, prompt.id);
+                if (!prompt.completed) {
+                    await api.prompt.generate(state, prompt.id);
+                }
                 break;
             case "completed":
                 if (event.image.data.prompt.id === prompt.id) {
-                    progress.style.width =
-                        (100 * event.image.data.progress) + "%";
-                    progress.parentElement.style.visibility =
-                        event.image.data.progress >= 1.0
-                            ? "hidden"
-                            : "visible";
+                    updateProgress(progress, prompt);
                     await api.prompt.generate(state, prompt.id);
                 }
                 break;
         }
     },
+};
+
+/**
+ * Updates the progress.
+ *
+ * @param progress
+ *     The progress element.
+ * @param prompt
+ *     The prompt whose progress to show.
+ */
+const updateProgress = (progress, prompt) => {
+    progress.style.width =
+        (100 * prompt.progress) + "%";
+    progress.parentElement.style.visibility =
+        (prompt.progress === undefined || prompt.progress >= 1.0)
+            ? "hidden"
+            : "visible";
 };

@@ -36,23 +36,17 @@ const module = {
          *
          * @param state
          *     The application state.
-         * @param name
-         *     The project name.
-         * @param description
-         *     A description of the project.
-         * @param image_width
-         *     The width of images generated.
-         * @param image_height
-         *     The height of images generated.
+         * @param project
+         *     A filled-in project description.
          * @return the newly created entity
          */
-        create: (state, name, description, image_width, image_height) =>
+        create: (state, project) =>
                 module.post(
-            "project", {
-                name,
-                description,
-                image_width,
-                image_height}),
+            "project", project.json())
+            .then(state
+                .project()
+                .create)
+            .then(module.storeT(state)),
 
         /**
          * Retrieves a single entity.
@@ -64,25 +58,27 @@ const module = {
          * @return the entity
          */
         get: (state, id) => module.get(
-            "project/{}".format(id)),
+            "project/{}".format(id))
+            .then(state
+                .project(id)
+                .update)
+            .then(module.storeT(state)),
 
         /**
          * Updates an entity.
          *
          * @param state
          *     The application state.
-         * @param id
-         *     The entity ID.
-         * @param name
-         *     The project name.
-         * @param description
-         *     A description of the project.
+         * @param project
+         *     A filled-in project description.
          * @return the updated entity
          */
-        update: (state, id, name, description) => module.put(
-            "project/{}".format(id), {
-                name,
-                description}),
+        update: (state, project) => module.put(
+            "project/{}".format(project.id), project.json())
+            .then(state
+                .project(id)
+                .update)
+            .then(module.storeT(state)),
 
         /**
          * Deletes an entity.
@@ -93,7 +89,11 @@ const module = {
          *     The entity ID.
          */
         remove: (state, id) => module.remove(
-            "project/{}".format(id)),
+            "project/{}".format(id))
+            .then(state
+                .project(id)
+                .remove)
+            .then(module.storeT(state)),
 
         /**
          * Lists all projects.
@@ -103,7 +103,15 @@ const module = {
          * @return a list of all projects
          */
         all: (state) => module.get(
-            "project"),
+            "project")
+            .then(rs => {
+                state.project().filter(rs.map(r => r.id));
+                return rs.map(
+                    r => state
+                        .project(r.id)
+                        .update(r));
+            })
+            .then(module.storeT(state)),
 
         /**
          * Retrieves the prompts for a project.
@@ -115,7 +123,14 @@ const module = {
          * @return a list of all prompts
          */
         prompts: (state, id) => module.get(
-            "project/{}/prompts".format(id)),
+            "project/{}/prompts".format(id))
+            .then(rs => state
+                .project(id)
+                .withPrompts(rs.map(
+                    r => state
+                        .prompt(r.id)
+                        .update(r))))
+            .then(module.storeT(state)),
 
         /**
          * The URL of a project icon.
@@ -134,10 +149,8 @@ const module = {
          *
          * @param state
          *     The application state.
-         * @param projectID
-         *     The ID of the parent project.
-         * @param text
-         *     The text of the prompt.
+         * @param prompt
+         *     The prompt to create.
          * @param steps
          *     The number of timesteps for generated images.
          * @param seed
@@ -146,13 +159,16 @@ const module = {
          *     The strength of the transformation.
          * @return the newly created entity
          */
-        create: (state, projectID, text, steps, seed, strength) =>
-        module.post(
-            "project/{}/prompts".format(projectID), {
-                text,
+        create: (state, prompt, steps, seed, strength) => module.post(
+            "project/{}/prompts".format(prompt.project), {
+                text: prompt.text,
                 steps,
                 seed,
-                strength}),
+                strength})
+            .then(state
+                .prompt()
+                .create)
+            .then(module.storeT(state)),
 
         /**
          * Retrieves a single entity.
@@ -164,7 +180,11 @@ const module = {
          * @return the entity
          */
         get: (state, id) => module.get(
-            "prompt/{}".format(id)),
+            "prompt/{}".format(id))
+            .then(state
+                .prompt(id)
+                .update)
+            .then(module.storeT(state)),
 
         /**
          * Deletes an entity.
@@ -175,7 +195,11 @@ const module = {
          *     The entity ID.
          */
         remove: (state, id) => module.remove(
-            "prompt/{}".format(id)),
+            "prompt/{}".format(id))
+            .then(state
+                .prompt(id)
+                .update)
+            .then(module.storeT(state)),
 
         /**
          * Retrieves the images for a prompt.
@@ -187,7 +211,11 @@ const module = {
          * @return a list of all images
          */
         images: (state, id) => module.get(
-            "prompt/{}/images".format(id)),
+            "prompt/{}/images".format(id)
+            .then(r => state
+                .prompt(id)
+                .images(r)))
+            .then(module.storeT(state)),
 
         /**
          * Starts generation of a new image for a prompt.
@@ -322,6 +350,21 @@ const module = {
         return document.location.href
             .replace(/#.*$/, "")
             .replace(/[^/]*$/, "") + BASE_URL;
+    },
+
+    /**
+     * Generates a function that stores the application state and then returns
+     * its argument.
+     *
+     * @param state
+     *     The application state.
+     * @return a function
+     */
+    storeT: (state) => {
+        return async (e) => {
+            await state.store();
+            return e;
+        };
     },
 };
 

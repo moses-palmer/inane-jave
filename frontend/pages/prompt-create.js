@@ -22,8 +22,9 @@ export default {
             // Create the prompt
             const prompt = await api.prompt.create(
                 state,
-                page.context.projectID,
-                data.get("text"),
+                state.prompt().empty()
+                    .withProject(page.context.projectID)
+                    .withText(data.get("text")),
                 parseInt(data.get("steps") || 50),
                 65536 * Math.random(),
                 parseFloat(data.get("strength") || 10.0));

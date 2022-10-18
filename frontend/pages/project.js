@@ -9,14 +9,14 @@ export default {
             api.project.get(state, id),
             api.project.prompts(state, id),
         ]);
-        return { project, prompts };
+        return { project };
     },
 
     show: async (page, state) => {
         const [target, add, remover, remove] = ui.managed(page.doc);
         const buttonTemplate = document.getElementById("button-large");
         const iconTemplate = document.getElementById("button-icons");
-        page.context.prompts.forEach((prompt) => {
+        page.context.project.prompts.forEach((prompt) => {
             const button = buttonTemplate.content.cloneNode(true);
             const [link, icon, name, description] = ui.managed(button);
 
@@ -53,10 +53,13 @@ export default {
         `project/${page.context.project.id}/notifications`,
 
     notify: async (page, state, event) => {
-        page.context.prompts.forEach(async (prompt) => {
+        page.context.project.prompts.map(p => state.prompt(p.id))
+                .forEach(async (prompt) => {
             switch (event.image?.kind) {
                 case "idle":
-                    await api.prompt.generate(state, prompt.id);
+                    if (!prompt.completed) {
+                        await api.prompt.generate(state, prompt.id);
+                    }
                     break;
                 case "completed":
                     if (event.image.data.prompt.id === prompt.id) {

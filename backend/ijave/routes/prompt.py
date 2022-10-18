@@ -1,6 +1,6 @@
 from aiohttp import web
 
-from . import ALL, created, not_found
+from . import ALL, image_redirect, not_found
 from .. import ent
 from ..executor import image
 
@@ -43,11 +43,9 @@ async def icon(req):
         raise web.HTTPBadRequest(body=str(e))
 
     with req.app.db.transaction() as tx:
-        entity = req.app.db.icon(tx, id)
-        if entity is not None and entity.data_is_loaded:
-            return web.Response(
-                body=entity.data,
-                content_type=entity.content_type)
+        image_id = req.app.db.icon(tx, id)
+        if image_id is not None:
+            return image_redirect(image_id)
         else:
             return not_found()
 
