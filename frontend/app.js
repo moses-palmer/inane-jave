@@ -119,6 +119,7 @@ const load = async () => {
             const ws = new WebSocket(`${root}/${notificationURL}`);
             ws.onmessage = async (message) => {
                 const data = JSON.parse(message.data);
+                state.applyEvent(data);
                 await page.notify?.call(null, page, state, data);
                 ui.applyEvent(data);
             };
