@@ -64,6 +64,7 @@ const module = {
                 .project(id)
                 .update)
             .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.project(id)))
             .catch(module.onError),
 
         /**
@@ -116,6 +117,7 @@ const module = {
                         .update(r));
             })
             .then(module.storeT(state))
+            .catch(module.orElse(undefined, () => state.project().all()))
             .catch(module.onError),
 
         /**
@@ -136,6 +138,7 @@ const module = {
                         .prompt(r.id)
                         .update(r))))
             .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.project(id), p => p.prompts))
             .catch(module.onError),
 
         /**
@@ -192,6 +195,7 @@ const module = {
                 .prompt(id)
                 .update)
             .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.prompt(id)))
             .catch(module.onError),
 
         /**
@@ -379,7 +383,43 @@ const module = {
     },
 
     /**
-     * An error handler used when all else fails.
+     * Generates a function that attempts to get a cached version of an entity.
+     *
+     * If none exists, the exception that is passed to the generated function
+     * is reraised.
+     *
+     * @param initial
+     *     The initial value.
+     * @param generator
+     *     Functions generating an entity given an ID. The value returned must
+     *     have an attribute `exists` that is set if the entity is to be kept.
+     *     The functions will be called in order on the result of the previous
+     *     function.
+     * @return a function
+     */
+    orElse: (initial, ...generators) => e => generators.reduce(
+        (acc, generator) => {
+            const result = generator(acc);
+            switch (result?.constructor) {
+                case Array:
+                    if (!result.every(r => r.exists)) {
+                        throw e;
+                    }
+                    break;
+                case Object:
+                    if (!result.exists) {
+                        throw e;
+                    }
+                    break;
+                default:
+                    throw e;
+            }
+            return result;
+        },
+        initial),
+
+    /**
+     * An error handker used when all else fails.
      */
     onError: e => DEFAULT_ERROR_HANDLER({e, reason: "connection"}),
 };
