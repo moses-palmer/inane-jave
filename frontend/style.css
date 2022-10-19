@@ -19,6 +19,7 @@
         --color-button-ok: #6080FF;
         --color-button-remove: #C05030;
         --color-disabled: gray;
+        --color-error: #F0A0A0;
         --color-fg: #202020;
         --color-line: #303030;
         --color-link: #4040A0;
@@ -41,6 +42,7 @@
         --color-button-ok: #6080FF;
         --color-button-remove: #C05030;
         --color-disabled: gray;
+        --color-error: #A04040;
         --color-fg: #E0E0E0;
         --color-line: #D0D0D0;
         --color-link: #8080C0;
@@ -152,6 +154,35 @@ svg:hover .frame {
 svg .icon {
     fill: var(--color-logo);
     stroke: none;
+}
+
+
+#offline-message {
+    background-color: var(--color-error);
+    border-radius: var(--radius-default);
+    flex-basis: 100%;
+    min-height: 100%;
+    padding: var(--margin-default);
+    margin-left: calc(2.0 * var(--margin-default));
+    margin-right: calc(2.0 * var(--margin-default));
+}
+#offline-message > h1 {
+    font-size: calc(0.8 * var(--font-size));
+    text-align: left;
+}
+#offline-message > p {
+    font-size: calc(0.6 * var(--font-size));
+    margin: 0;
+    text-align: left;
+}
+.offline .online-only {
+    display: none;
+}
+.offline-only {
+    display: none;
+}
+.offline .offline-only {
+    display: initial;
 }
 
 
