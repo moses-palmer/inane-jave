@@ -30,6 +30,19 @@ const module = {
      */
     ERROR_CLASS: "error",
 
+    /**
+     * The name of an event dispatched to the window whenever a request to the
+     * backend is successful.
+     */
+    CONNECTED_EVENT: "connected",
+
+    /**
+     * The name of an event dispatched to the window whenever a request to the
+     * backend fails.
+     */
+    DISCONNECTED_EVENT: "disconnected",
+
+
     project: {
         /**
          * Creates a new entity.
@@ -46,7 +59,8 @@ const module = {
             .then(state
                 .project()
                 .create)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves a single entity.
@@ -62,7 +76,9 @@ const module = {
             .then(state
                 .project(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.project(id)))
+            .catch(module.onError),
 
         /**
          * Updates an entity.
@@ -78,7 +94,8 @@ const module = {
             .then(state
                 .project(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Deletes an entity.
@@ -93,7 +110,8 @@ const module = {
             .then(state
                 .project(id)
                 .remove)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Lists all projects.
@@ -111,7 +129,9 @@ const module = {
                         .project(r.id)
                         .update(r));
             })
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.orElse(undefined, () => state.project().all()))
+            .catch(module.onError),
 
         /**
          * Retrieves the prompts for a project.
@@ -130,7 +150,9 @@ const module = {
                     r => state
                         .prompt(r.id)
                         .update(r))))
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.project(id), p => p.prompts))
+            .catch(module.onError),
 
         /**
          * The URL of a project icon.
@@ -168,7 +190,8 @@ const module = {
             .then(state
                 .prompt()
                 .create)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves a single entity.
@@ -184,7 +207,9 @@ const module = {
             .then(state
                 .prompt(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.orElse(id, id => state.prompt(id)))
+            .catch(module.onError),
 
         /**
          * Deletes an entity.
@@ -199,7 +224,8 @@ const module = {
             .then(state
                 .prompt(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves the images for a prompt.
@@ -215,7 +241,8 @@ const module = {
             .then(r => state
                 .prompt(id)
                 .images(r)))
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Starts generation of a new image for a prompt.
@@ -226,7 +253,8 @@ const module = {
          *     The prompt ID.
          */
         generate: (state, id) => module.post(
-            "prompt/{}/generate-next".format(id)),
+            "prompt/{}/generate-next".format(id))
+            .catch(module.onError),
 
         /**
          * The URL of a prompt icon.
@@ -253,7 +281,8 @@ const module = {
             method: "POST",
             body: Array.from(files).reduce(
                 (acc, file, i) => acc.append("image" + i, file) ?? acc,
-                new FormData())}),
+                new FormData())})
+            .catch(module.onError),
 
         /**
          * The URL of an image resource.
@@ -323,15 +352,22 @@ const module = {
      */
     req: async (resource, init) => await fetch(
             `${module.base()}/${resource}`,
-            init,
-        ).then((r) => {
+            init)
+        .then(
+            r => {
+                window.dispatchEvent(new Event(module.CONNECTED_EVENT));
+                return r;
+            }, e => {
+                window.dispatchEvent(new Event(module.DISCONNECTED_EVENT));
+                throw e;
+            })
+        .then((r) => {
             if (r.status >= 500) {
                 throw r.statusText;
             } else {
                 return r;
             }
         })
-        .catch(e => DEFAULT_ERROR_HANDLER({e, reason: "connection"}))
         .then(async r => {
             if (!r.ok) {
                 throw await r.text();
@@ -366,6 +402,47 @@ const module = {
             return e;
         };
     },
+
+    /**
+     * Generates a function that attempts to get a cached version of an entity.
+     *
+     * If none exists, the exception that is passed to the generated function
+     * is reraised.
+     *
+     * @param initial
+     *     The initial value.
+     * @param generator
+     *     Functions generating an entity given an ID. The value returned must
+     *     have an attribute `exists` that is set if the entity is to be kept.
+     *     The functions will be called in order on the result of the previous
+     *     function.
+     * @return a function
+     */
+    orElse: (initial, ...generators) => e => generators.reduce(
+        (acc, generator) => {
+            const result = generator(acc);
+            switch (result?.constructor) {
+                case Array:
+                    if (!result.every(r => r.exists)) {
+                        throw e;
+                    }
+                    break;
+                case Object:
+                    if (!result.exists) {
+                        throw e;
+                    }
+                    break;
+                default:
+                    throw e;
+            }
+            return result;
+        },
+        initial),
+
+    /**
+     * An error handker used when all else fails.
+     */
+    onError: e => DEFAULT_ERROR_HANDLER({e, reason: "connection"}),
 };
 
 export default module;

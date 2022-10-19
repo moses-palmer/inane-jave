@@ -50,6 +50,8 @@ class State {
                 create: r => self.project(r.id).update(r),
                 empty: () => entity(
                     this, "project", undefined, PROJECT, PROJECT_INV),
+                all: () => Object.keys(self._state.project)
+                    .map(id => self.project(id)),
                 filter: ids => Object.keys(self._state.project).forEach(id => {
                     if (ids.indexOf(id) < 0) {
                         delete self._state.project[id];
@@ -178,6 +180,7 @@ const PROMPT_INV = Object.fromEntries(Object.entries(PROMPT)
  *     Keys with the value `undefined` are igenored.
  */
 const entity = (state, type, id, frontToBack, backToFront) => {
+    const exists = id in state._state[type];
     const value = id === undefined
         ? {}
         : state._state[type][id] || { id };
@@ -187,6 +190,7 @@ const entity = (state, type, id, frontToBack, backToFront) => {
     }
 
     const self = {
+        exists,
         clone: () => {
             const result = { ...self };
             delete result.id;
