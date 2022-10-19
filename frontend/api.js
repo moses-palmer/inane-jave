@@ -46,7 +46,8 @@ const module = {
             .then(state
                 .project()
                 .create)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves a single entity.
@@ -62,7 +63,8 @@ const module = {
             .then(state
                 .project(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Updates an entity.
@@ -78,7 +80,8 @@ const module = {
             .then(state
                 .project(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Deletes an entity.
@@ -93,7 +96,8 @@ const module = {
             .then(state
                 .project(id)
                 .remove)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Lists all projects.
@@ -111,7 +115,8 @@ const module = {
                         .project(r.id)
                         .update(r));
             })
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves the prompts for a project.
@@ -130,7 +135,8 @@ const module = {
                     r => state
                         .prompt(r.id)
                         .update(r))))
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * The URL of a project icon.
@@ -168,7 +174,8 @@ const module = {
             .then(state
                 .prompt()
                 .create)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves a single entity.
@@ -184,7 +191,8 @@ const module = {
             .then(state
                 .prompt(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Deletes an entity.
@@ -199,7 +207,8 @@ const module = {
             .then(state
                 .prompt(id)
                 .update)
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Retrieves the images for a prompt.
@@ -215,7 +224,8 @@ const module = {
             .then(r => state
                 .prompt(id)
                 .images(r)))
-            .then(module.storeT(state)),
+            .then(module.storeT(state))
+            .catch(module.onError),
 
         /**
          * Starts generation of a new image for a prompt.
@@ -226,7 +236,8 @@ const module = {
          *     The prompt ID.
          */
         generate: (state, id) => module.post(
-            "prompt/{}/generate-next".format(id)),
+            "prompt/{}/generate-next".format(id))
+            .catch(module.onError),
 
         /**
          * The URL of a prompt icon.
@@ -253,7 +264,8 @@ const module = {
             method: "POST",
             body: Array.from(files).reduce(
                 (acc, file, i) => acc.append("image" + i, file) ?? acc,
-                new FormData())}),
+                new FormData())})
+            .catch(module.onError),
 
         /**
          * The URL of an image resource.
@@ -331,7 +343,6 @@ const module = {
                 return r;
             }
         })
-        .catch(e => DEFAULT_ERROR_HANDLER({e, reason: "connection"}))
         .then(async r => {
             if (!r.ok) {
                 throw await r.text();
@@ -366,6 +377,11 @@ const module = {
             return e;
         };
     },
+
+    /**
+     * An error handler used when all else fails.
+     */
+    onError: e => DEFAULT_ERROR_HANDLER({e, reason: "connection"}),
 };
 
 export default module;
