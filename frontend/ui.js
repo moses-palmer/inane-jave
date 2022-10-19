@@ -25,6 +25,23 @@ export const PROMPT_CLASS = "prompt";
 export const RUNNING_CLASS = "running";
 
 /**
+ * A class name applied to the body element if running in offline mode.
+ */
+export const OFFLINE_CLASS = "offline";
+
+/**
+ * A class name applied to elements that should only be displayed in online
+ * mode.
+ */
+export const ONLINE_ONLY = "online-only";
+
+/**
+ * A class name applied to elements that should only be displayed in offline
+ * mode.
+ */
+export const OFFLINE_ONLY = "offline-only";
+
+/**
  * The selecor used to find the main element.
  */
 const MAIN_SELECTOR = "#main";

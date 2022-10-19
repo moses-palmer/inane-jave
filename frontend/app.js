@@ -46,26 +46,23 @@ const load = async () => {
             console.error(e, e.stack);
         } catch (e) {}
 
-        const connectionError = e.reason === "connection";
-        const title = connectionError
-            ? _("Jave is not jivin'")
-            : _("An unexpected error occurred");
-        const message = connectionError
-            ? _("Inane Jave does not appear to be listening. "
-                    + "Please make sure the app is running!")
-            : _("The error message is: {}").format(e.message && e.filename
-                ? `${e.message}; ${e.filename}:${e.lineno}`
-                : e.reason);
+        if (e.reason !== "connection") {
+            const title = _("An unexpected error occurred");
+            const message = _("The error message is: {}").format(
+                e.message && e.filename
+                    ? `${e.message}; ${e.filename}:${e.lineno}`
+                    : e.reason);
 
-        const response = await ui.message(
-            title,
-            message,
-            [
-                {name: "ignore", text: _("Ignore"), classes: ["cancel"]},
-                {name: "reload", text: _("Reload"), classes: ["ok"]},
-            ]);
-        if (response === "reload") {
-            location.reload();
+            const response = await ui.message(
+                title,
+                message,
+                [
+                    {name: "ignore", text: _("Ignore"), classes: ["cancel"]},
+                    {name: "reload", text: _("Reload"), classes: ["ok"]},
+                ]);
+            if (response === "reload") {
+                location.reload();
+            }
         }
     };
 
@@ -138,6 +135,13 @@ const load = async () => {
         e.preventDefault();
         await refresh();
     });
+
+    window.addEventListener(
+        api.CONNECTED_EVENT,
+        () => document.body.classList.remove(ui.OFFLINE_CLASS));
+    window.addEventListener(
+        api.DISCONNECTED_EVENT,
+        () => document.body.classList.add(ui.OFFLINE_CLASS));
 
     api.defaultErrorHandler(errorManager);
 
