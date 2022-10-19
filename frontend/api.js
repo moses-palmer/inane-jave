@@ -30,6 +30,19 @@ const module = {
      */
     ERROR_CLASS: "error",
 
+    /**
+     * The name of an event dispatched to the window whenever a request to the
+     * backend is successful.
+     */
+    CONNECTED_EVENT: "connected",
+
+    /**
+     * The name of an event dispatched to the window whenever a request to the
+     * backend fails.
+     */
+    DISCONNECTED_EVENT: "disconnected",
+
+
     project: {
         /**
          * Creates a new entity.
@@ -339,8 +352,16 @@ const module = {
      */
     req: async (resource, init) => await fetch(
             `${module.base()}/${resource}`,
-            init,
-        ).then((r) => {
+            init)
+        .then(
+            r => {
+                window.dispatchEvent(new Event(module.CONNECTED_EVENT));
+                return r;
+            }, e => {
+                window.dispatchEvent(new Event(module.DISCONNECTED_EVENT));
+                throw e;
+            })
+        .then((r) => {
             if (r.status >= 500) {
                 throw r.statusText;
             } else {
