@@ -19,20 +19,6 @@ def main(version: str, database: db.Database, port: int):
 
     logging.basicConfig(level=logging.DEBUG)
 
-    print('Projects:')
-    for project in database.projects():
-        print('  - id: {}'.format(project.id))
-        print('    name: {}'.format(project.name))
-        print('    description: {}'.format(project.description))
-        print('    prompts:')
-        for prompt in database.prompts(project.id):
-            print('    - id: {}'.format(prompt.id))
-            print('      text: {}'.format(prompt.text))
-            print('      images:')
-            for image in database.images(prompt.id):
-                print('      - id: {}'.format(image.id))
-                print('        timestamp: {}'.format(image.timestamp))
-
     async def on_prepare(request, response):
         response.headers['server'] = 'Inane Jave/' + version
 
