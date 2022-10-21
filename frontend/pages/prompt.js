@@ -11,7 +11,8 @@ export default {
     },
 
     show: async (page, state) => {
-        const [image, download, remove, progress] = ui.managed(page.doc);
+        const [image, download, duplicate, remove, progress] =
+            ui.managed(page.doc);
         const iconTemplate = document.getElementById("button-icons");
 
         const width = page.context.project.image_width;
@@ -22,6 +23,8 @@ export default {
         image.style.aspectRatio = `${width} / ${height}`;
         download.appendChild(
             iconTemplate.content.querySelector("#download").cloneNode(true));
+        duplicate.appendChild(
+            iconTemplate.content.querySelector("#duplicate").cloneNode(true));
         remove.appendChild(
             iconTemplate.content.querySelector("#remove").cloneNode(true));
         remove.onclick = async () => {
@@ -43,7 +46,8 @@ export default {
         `project/${page.context.project.id}/notifications`,
 
     notify: async (page, state, event) => {
-        const [image, download, remove, progress] = ui.managed(page.doc);
+        const [image, download, duplicate, remove, progress] =
+            ui.managed(page.doc);
         const prompt = page.context.prompt;
         switch (event.image?.kind) {
             case "idle":
