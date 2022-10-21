@@ -1,5 +1,6 @@
 import os
 import sys
+import webbrowser
 
 from aiohttp import web
 
@@ -14,7 +15,7 @@ PORT = os.getenv('IJAVE_PORT', '8080')
 IJAVE_STATIC_DIR = os.getenv('IJAVE_STATIC_DIR')
 
 
-def main(version: str, database: db.Database, port: int):
+def main(version: str, database: db.Database, port: int, launch: bool):
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
@@ -41,6 +42,8 @@ def main(version: str, database: db.Database, port: int):
 
     print('=== Starting web server ===')
     sys.stdout.flush()
+    if launch:
+        webbrowser.open('http://localhost:{}'.format(PORT))
     web.run_app(app, port=port)
 
     app.image_executor.stop()
@@ -68,6 +71,11 @@ if __name__ == '__main__':
         'database',
         help='the database file backing the application',
         type=db.Database)
+
+    parser.add_argument(
+        '--launch',
+        help='open the application in a web browser',
+        action='store_true')
 
     try:
         port = int(PORT)
