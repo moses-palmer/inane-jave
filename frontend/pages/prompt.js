@@ -49,10 +49,12 @@ export default {
     notify: async (page, state, event) => {
         const [image, download, duplicate, remove, progress] =
             ui.managed(page.doc);
-        const prompt = page.context.prompt;
+        const prompt = state.prompt(page.context.prompt.id);
         switch (event.image?.kind) {
             case "idle":
-                await api.prompt.generate(state, prompt.id);
+                if (!prompt.completed) {
+                    await api.prompt.generate(state, prompt.id);
+                }
                 break;
             case "completed":
                 if (event.image.data.prompt.id === prompt.id) {

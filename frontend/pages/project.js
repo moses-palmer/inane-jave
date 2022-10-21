@@ -53,10 +53,13 @@ export default {
         `project/${page.context.project.id}/notifications`,
 
     notify: async (page, state, event) => {
-        page.context.project.prompts.forEach(async (prompt) => {
+        page.context.project.prompts.map(p => state.prompt(p.id))
+                .forEach(async (prompt) => {
             switch (event.image?.kind) {
                 case "idle":
-                    await api.prompt.generate(state, prompt.id);
+                    if (!prompt.completed) {
+                        await api.prompt.generate(state, prompt.id);
+                    }
                     break;
                 case "completed":
                     if (event.image.data.prompt.id === prompt.id) {
