@@ -15,7 +15,9 @@ PORT = os.getenv('IJAVE_PORT', '8080')
 IJAVE_STATIC_DIR = os.getenv('IJAVE_STATIC_DIR')
 
 
-def main(version: str, database: db.Database, port: int, launch: bool):
+def main(
+        version: str, database: db.Database, port: int, launch: bool,
+        address: str):
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
@@ -44,7 +46,7 @@ def main(version: str, database: db.Database, port: int, launch: bool):
     sys.stdout.flush()
     if launch:
         webbrowser.open('http://localhost:{}'.format(PORT))
-    web.run_app(app, port=port)
+    web.run_app(app, port=port, host=address)
 
     app.image_executor.stop()
 
@@ -76,6 +78,11 @@ if __name__ == '__main__':
         '--launch',
         help='open the application in a web browser',
         action='store_true')
+
+    parser.add_argument(
+        '--address',
+        help='the address on which to listen',
+        default='127.0.0.1')
 
     try:
         port = int(PORT)
