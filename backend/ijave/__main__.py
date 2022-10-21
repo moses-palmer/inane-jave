@@ -1,5 +1,6 @@
 import os
 import sys
+import webbrowser
 
 from aiohttp import web
 
@@ -14,24 +15,12 @@ PORT = os.getenv('IJAVE_PORT', '8080')
 IJAVE_STATIC_DIR = os.getenv('IJAVE_STATIC_DIR')
 
 
-def main(version: str, database: db.Database, port: int):
+def main(
+        version: str, database: db.Database, port: int, launch: bool,
+        address: str):
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
-
-    print('Projects:')
-    for project in database.projects():
-        print('  - id: {}'.format(project.id))
-        print('    name: {}'.format(project.name))
-        print('    description: {}'.format(project.description))
-        print('    prompts:')
-        for prompt in database.prompts(project.id):
-            print('    - id: {}'.format(prompt.id))
-            print('      text: {}'.format(prompt.text))
-            print('      images:')
-            for image in database.images(prompt.id):
-                print('      - id: {}'.format(image.id))
-                print('        timestamp: {}'.format(image.timestamp))
 
     async def on_prepare(request, response):
         response.headers['server'] = 'Inane Jave/' + version
@@ -55,7 +44,9 @@ def main(version: str, database: db.Database, port: int):
 
     print('=== Starting web server ===')
     sys.stdout.flush()
-    web.run_app(app, port=port)
+    if launch:
+        webbrowser.open('http://localhost:{}'.format(PORT))
+    web.run_app(app, port=port, host=address)
 
     app.image_executor.stop()
 
@@ -82,6 +73,16 @@ if __name__ == '__main__':
         'database',
         help='the database file backing the application',
         type=db.Database)
+
+    parser.add_argument(
+        '--launch',
+        help='open the application in a web browser',
+        action='store_true')
+
+    parser.add_argument(
+        '--address',
+        help='the address on which to listen',
+        default='127.0.0.1')
 
     try:
         port = int(PORT)
