@@ -138,6 +138,9 @@ const PROJECT_INV = Object.fromEntries(Object.entries(PROJECT)
  */
 const PROMPT = {
     id: "id",
+    completed: {
+        get: (value, state, id) => value.progress >= 1.0,
+    },
     images: undefined,
     progress: undefined,
     project: "project",
