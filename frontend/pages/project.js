@@ -22,6 +22,7 @@ export default {
             button.firstElementChild.classList.add(
                 ui.PROMPT_CLASS,
                 ui.className(prompt.id));
+            link.href = `#prompt/${prompt.id}`;
             icon.style.backgroundImage =
                 `url(${api.prompt.iconURL(prompt.id)})`;
             name.innerText = prompt.text;
