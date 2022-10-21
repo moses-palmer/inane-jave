@@ -1,0 +1,57 @@
+<section class="app" id="prompt-create">
+    <h1 data-trans>
+        New prompt
+    </h1>
+
+    <p data-trans>
+        Create a new prompt to start generating images.
+    </p>
+
+    <section>
+        <form class="managed">
+            <label for="name" data-trans>Prompt:</label>
+            <textarea
+                    data-trans="placeholder"
+                    type="text"
+                    name="text"
+                    autocomplete="off"
+                    placeholder="Inane Jave riding a horse. In space."
+                    required="required"></textarea>
+
+            <fieldset>
+                <div>
+                    <label for="steps" data-trans>Number of steps:</label>
+                    <input
+                            type="number"
+                            name="steps"
+                            value="50"
+                            placeholder="50"></input>
+                </div>
+                <div>
+                    <label for="strength" data-trans>Strength:</label>
+                    <input
+                            type="number"
+                            name="strength"
+                            value="10.0"
+                            placeholder="10.0"></input>
+                </div>
+            </fieldset>
+
+            <div class="buttons row">
+                <input
+                        data-trans="value"
+                        class="add"
+                        type="submit"
+                        value="Create">
+                </input>
+                <input
+                        data-trans="value"
+                        class="cancel"
+                        type="button"
+                        value="Cancel"
+                        onclick="history.back()">
+                </input>
+            </div>
+        </form>
+    </section>
+</section>
