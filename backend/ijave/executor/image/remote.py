@@ -9,18 +9,18 @@ import numpy as np
 import PIL.Image as im
 import tensorflow as tf
 
-from keras_cv.models.generative.stable_diffusion.clip_tokenizer import (
+from keras_cv.models.stable_diffusion.clip_tokenizer import (
     SimpleTokenizer)
-from keras_cv.models.generative.stable_diffusion.constants import (
+from keras_cv.models.stable_diffusion.constants import (
     _ALPHAS_CUMPROD)
-from keras_cv.models.generative.stable_diffusion.constants import (
+from keras_cv.models.stable_diffusion.constants import (
     _UNCONDITIONAL_TOKENS)
-from keras_cv.models.generative.stable_diffusion.decoder import (
+from keras_cv.models.stable_diffusion.decoder import (
     Decoder)
-from keras_cv.models.generative.stable_diffusion.diffusion_model import (
-    DiffusionModel)
-from keras_cv.models.generative.stable_diffusion.text_encoder import (
-    TextEncoder)
+from keras_cv.models.stable_diffusion.diffusion_model import (
+    DiffusionModelV2 as DiffusionModel)
+from keras_cv.models.stable_diffusion.text_encoder import (
+    TextEncoderV2 as TextEncoder)
 from tensorflow import keras
 
 from .. import timer
@@ -37,20 +37,33 @@ MAX_PROMPT_LENGTH = 77
 #: increases.
 JIT_COMPILE = True
 
+#: The Huggingface base URL.
+def huggingface(name, repo, path):
+    return 'https://huggingface.co/' + name + '/' + repo + '/' + path
+
 #: The base URL for the weights.
-WEIGHTS_BASE = 'https://huggingface.co/fchollet/stable-diffusion/resolve/main/'
+WEIGHTS_BASE = huggingface(
+    'fchollet',
+    'stable-diffusion',
+    'resolve/main/')
 
 #: The text encoder weights.
 ENCODER_WEIGHTS = {
-    'origin': WEIGHTS_BASE + 'kcv_encoder.h5',
-    'file_hash': '4789e63e07c0e54d6a34a29b45ce81ec'
-                 'e27060c499a709d556c7755b42bb0dc4'}
+    'origin': huggingface(
+        'ianstenbit',
+        'keras-sd2.1',
+        'resolve/main/text_encoder_v2_1.h5'),
+    'file_hash': '985002e68704e1c5c3549de332218e99'
+                 'c5b9b745db7171d5f31fcd9a6089f25b'}
 
 #: The model weights.
 MODEL_WEIGHTS = {
-    'origin': WEIGHTS_BASE + 'kcv_diffusion_model.h5',
-    'file_hash': '8799ff9763de13d7f30a683d653018e1'
-                 '14ed24a6a819667da4f5ee10f9e805fe'}
+    'origin': huggingface(
+        'ianstenbit',
+        'keras-sd2.1',
+        'resolve/main/diffusion_model_v2_1.h5'),
+    'file_hash': 'c31730e91111f98fe0e2dbde4475d381'
+                 'b5287ebb9672b1821796146a25c5132d'}
 
 #: The decoder weights.
 DECODER_WEIGHTS = {

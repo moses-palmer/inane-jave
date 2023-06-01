@@ -1,6 +1,6 @@
 aiohttp==3.8.3
-keras-cv==0.3.3
+keras-cv==0.5.0
 Pillow==9.2.0
 numpy==1.23.3
-tensorflow==2.10.0
+tensorflow==2.12
 tensorflow_datasets==4.6.0
